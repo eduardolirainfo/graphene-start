@@ -1,4 +1,4 @@
-from graphene import Field, List, Int, ObjectType, Schema, String
+from graphene import Field, Int, List, Mutation, ObjectType, Schema, String
 
 
 class UserType(ObjectType):
@@ -6,6 +6,27 @@ class UserType(ObjectType):
     name = String()
     age = Int()
     email = String()
+
+
+class CreateUser(Mutation):
+    class Arguments:
+        name = String()
+        age = Int()
+        email = String()
+
+    user = Field(UserType)
+
+    @staticmethod
+    def mutate(root, info, name, age, email):
+        user = {
+            'id': len(Query.users) + 1,
+            'name': name,
+            'age': age,
+            'email': email,
+        }
+        Query.users.append(user)
+
+        return CreateUser(user=user)
 
 
 class Query(ObjectType):
@@ -53,11 +74,27 @@ class Query(ObjectType):
         return matched_users if matched_users else None
 
 
-schema = Schema(query=Query)
+class Mutation(ObjectType):
+    create_user = CreateUser.Field()
+
+
+schema = Schema(query=Query, mutation=Mutation)
+
+gql_2 = """
+query{
+  user(userId: 5){
+    id
+    name
+    age
+    email
+  }
+}
+"""
+
 
 # gql = """
 # query{
-#   user(userId: 3){
+#   usersByMinAge(minAge: 35){
 #     id
 #     name
 #     age
@@ -67,12 +104,14 @@ schema = Schema(query=Query)
 # """
 
 gql = """
-query{
-  usersByMinAge(minAge: 35){
-    id
-    name
-    age
-    email
+mutation{
+  createUser(name: "Tom", age: 40, email: "demoy@gmail.com"){
+    user{
+      id
+      name
+      age
+      email
+    }
   }
 }
 """
@@ -80,3 +119,5 @@ query{
 if __name__ == '__main__':
     result = schema.execute(gql)
     print(result)
+    result_2 = schema.execute(gql_2)
+    print(result_2)
