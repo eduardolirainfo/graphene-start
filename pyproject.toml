@@ -1,0 +1,32 @@
+[project]
+name = "graphene-start"
+version = "0.1.0"
+description = ""
+authors = [{ name = "eduardolirainfo", email = "eduardolirainfo@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.7,<4"
+dependencies = ["graphene (>=3.4.3,<4.0.0)"]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+skip-string-normalization = true
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.6"
+
+[tool.ruff]
+line-length = 79
+exclude = ["migrations", "tests"]
+fix = true  # Ativar correções automáticas
+
+[tool.ruff.lint]
+select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
