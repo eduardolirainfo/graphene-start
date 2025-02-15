@@ -18,6 +18,7 @@ skip-string-normalization = true
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.9.6"
+taskipy = "^1.14.1"
 
 [tool.ruff]
 line-length = 79
@@ -30,3 +31,14 @@ select = ['I', 'F', 'E', 'W', 'PL', 'PT']
 [tool.ruff.format]
 preview = true
 quote-style = 'single'
+
+
+[tool.taskipy.tasks]
+
+lint = 'ruff check . && ruff check . --diff'
+format = 'ruff check . --fix && ruff format .'
+run = 'poetry run python graphene_start/main.py'
+pre_test = 'task lint'
+test = 'pytest -s -x --cov=graphene_start -vv'
+post_test = 'coverage html'
+

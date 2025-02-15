@@ -29,6 +29,35 @@ class CreateUser(Mutation):
         return CreateUser(user=user)
 
 
+class UpdateUser(Mutation):
+    class Arguments:
+        user_id = Int(required=True)
+        name = String()
+        age = Int()
+        email = String()
+
+    user = Field(UserType)
+
+    @staticmethod
+    def mutate(root, info, user_id, name=None, age=None, email=None):
+        user = None
+        for u in Query.users:
+            if u['id'] == user_id:
+                user = u
+                break
+        if not user:
+            return UpdateUser(user=None)
+
+        if name is not None:
+            user['name'] = name
+        if age is not None:
+            user['age'] = age
+        if email is not None:
+            user['email'] = email
+
+        return UpdateUser(user=user)
+
+
 class Query(ObjectType):
     user = Field(UserType, user_id=Int())
     users_by_min_age = List(UserType, min_age=Int())
@@ -76,13 +105,14 @@ class Query(ObjectType):
 
 class Mutation(ObjectType):
     create_user = CreateUser.Field()
+    update_user = UpdateUser.Field()
 
 
 schema = Schema(query=Query, mutation=Mutation)
 
-gql_2 = """
+gql_query = """
 query{
-  user(userId: 5){
+  user(userId: 1){
     id
     name
     age
@@ -103,9 +133,24 @@ query{
 # }
 # """
 
-gql = """
+# gql = """
+# mutation{
+#   createUser(name: "Tom", age: 40, email: "demoy@gmail.com"){
+#     user{
+#       id
+#       name
+#       age
+#       email
+#     }
+#   }
+# }
+# """
+
+
+gql_update = """
 mutation{
-  createUser(name: "Tom", age: 40, email: "demoy@gmail.com"){
+  updateUser(userId: 1, name: "Update User",
+  age: 65, email: "demoxx@gmail.com"){
     user{
       id
       name
@@ -117,7 +162,9 @@ mutation{
 """
 
 if __name__ == '__main__':
-    result = schema.execute(gql)
+    result = schema.execute(gql_query)
     print(result)
-    result_2 = schema.execute(gql_2)
+    result_2 = schema.execute(gql_update)
     print(result_2)
+    result = schema.execute(gql_query)
+    print(result)
