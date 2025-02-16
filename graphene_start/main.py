@@ -58,6 +58,28 @@ class UpdateUser(Mutation):
         return UpdateUser(user=user)
 
 
+class DeleteUser(Mutation):
+    class Arguments:
+        user_id = Int(required=True)
+
+    user = Field(UserType)
+
+    @staticmethod
+    def mutate(root, info, user_id):
+        user = None
+        for idx, u in enumerate(Query.users):
+            if u['id'] == user_id:
+                user = u
+                del Query.users[idx]
+                break
+        if not user:
+            return None
+
+        Query.users.remove(user)
+
+        return DeleteUser(user=user)
+
+
 class Query(ObjectType):
     user = Field(UserType, user_id=Int())
     users_by_min_age = List(UserType, min_age=Int())
@@ -106,6 +128,7 @@ class Query(ObjectType):
 class Mutation(ObjectType):
     create_user = CreateUser.Field()
     update_user = UpdateUser.Field()
+    delete_user = DeleteUser.Field()
 
 
 schema = Schema(query=Query, mutation=Mutation)
@@ -147,10 +170,24 @@ query{
 # """
 
 
-gql_update = """
+# gql_update = """
+# mutation{
+#   updateUser(userId: 1, name: "Update User",
+#   age: 65, email: "demoxx@gmail.com"){
+#     user{
+#       id
+#       name
+#       age
+#       email
+#     }
+#   }
+# }
+# """
+
+
+gql_delete = """
 mutation{
-  updateUser(userId: 1, name: "Update User",
-  age: 65, email: "demoxx@gmail.com"){
+  deleteUser(userId: 1){
     user{
       id
       name
@@ -161,10 +198,14 @@ mutation{
 }
 """
 
+
 if __name__ == '__main__':
     result = schema.execute(gql_query)
     print(result)
-    result_2 = schema.execute(gql_update)
+    result_2 = schema.execute(gql_delete)
     print(result_2)
     result = schema.execute(gql_query)
-    print(result)
+    if result.errors:
+        print(result.errors)
+    else:
+        print(result.data)
