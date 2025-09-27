@@ -1,4 +1,5 @@
 from graphene import Field, Int, List, Mutation, ObjectType, Schema, String
+from rich import print
 
 
 class UserType(ObjectType):
@@ -17,7 +18,7 @@ class CreateUser(Mutation):
     user = Field(UserType)
 
     @staticmethod
-    def mutate(root, info, name, age, email):
+    def mutate(root, name, age, email):
         user = {
             'id': len(Query.users) + 1,
             'name': name,
@@ -39,7 +40,7 @@ class UpdateUser(Mutation):
     user = Field(UserType)
 
     @staticmethod
-    def mutate(root, info, user_id, name=None, age=None, email=None):
+    def mutate(root, user_id, name=None, age=None, email=None):
         user = None
         for u in Query.users:
             if u['id'] == user_id:
@@ -65,7 +66,7 @@ class DeleteUser(Mutation):
     user = Field(UserType)
 
     @staticmethod
-    def mutate(root, info, user_id):
+    def mutate(root, user_id):
         user = None
         for idx, u in enumerate(Query.users):
             if u['id'] == user_id:
@@ -81,7 +82,7 @@ class DeleteUser(Mutation):
 
 
 class Query(ObjectType):
-    user = Field(UserType, user_id=Int())
+    user = Field(UserType, userId=Int())
     users_by_min_age = List(UserType, min_age=Int())
     users = [
         {
@@ -108,16 +109,21 @@ class Query(ObjectType):
             'age': 45,
             'email': 'demo4@gmail.com',
         },
+        {
+            'id': 5,
+            'name': 'Eduardo',
+            'age': 39,
+            'email': 'eduardolirainfo@gmail.com',
+        },
     ]
 
     @staticmethod
-    def resolve_user(root, info, user_id):
-        matched_users = [user for user in Query.users if user['id'] == user_id]
-
+    def resolve_user(root, info, userId):
+        matched_users = [user for user in Query.users if user['id'] == userId]
         return matched_users[0] if matched_users else None
 
     @staticmethod
-    def resolve_users_by_min_age(root, info, min_age):
+    def resolve_users_by_min_age(root, min_age):
         matched_users = [
             user for user in Query.users if user['age'] >= min_age
         ]
@@ -201,11 +207,11 @@ mutation{
 
 if __name__ == '__main__':
     result = schema.execute(gql_query)
-    print(result)
+    print('[bold green]Resultado da consulta:[/bold green]', result)
     result_2 = schema.execute(gql_delete)
-    print(result_2)
+    print('[bold green]Resultado da consulta:[/bold green]', result_2)
     result = schema.execute(gql_query)
     if result.errors:
-        print(result.errors)
+        print('[bold red]Erros na consulta:[/bold red]', result.errors)
     else:
-        print(result.data)
+        print('[bold green]Dados da consulta:[/bold green]', result.data)
